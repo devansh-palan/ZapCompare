@@ -9,6 +9,7 @@ async function launchBrowser() {
       "--disable-blink-features=AutomationControlled",
     ],
     defaultViewport: { width: 1280, height: 800 },
+    executablePath: puppeteer.executablePath(),
   });
 
   const page = await browser.newPage();
