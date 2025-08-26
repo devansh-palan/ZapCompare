@@ -186,10 +186,11 @@ app.get("/search", authMiddleware, async (req, res) => {
 
     console.log(`🔍 Cache miss → scraping Blinkit, Swiggy & Zepto for: ${brand} ${item}`);
     const results = await Promise.allSettled([
-      scrapeBlinkit(brand, item, 10),
-      scrapeSwiggyInstamart(brand, item, 10),
-      scrapeZepto(brand, item, 10),
-    ]);
+  scrapeBlinkit(brand, item, 10).catch(e => { console.error("Blinkit failed:", e); throw e; }),
+  scrapeSwiggyInstamart(brand, item, 10).catch(e => { console.error("Swiggy failed:", e); throw e; }),
+  scrapeZepto(brand, item, 10).catch(e => { console.error("Zepto failed:", e); throw e; }),
+]);
+
 
     const blinkit = results[0].status === "fulfilled" ? results[0].value : [];
     const swiggy = results[1].status === "fulfilled" ? results[1].value : [];
