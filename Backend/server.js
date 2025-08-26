@@ -185,11 +185,14 @@ app.get("/search", authMiddleware, async (req, res) => {
     }
 
     console.log(`🔍 Cache miss → scraping Blinkit, Swiggy & Zepto for: ${brand} ${item}`);
-
+    const numLimit = parseInt(limit);
+      if (isNaN(numLimit) || numLimit <= 0) {
+        numLimit = 10; // default limit
+      }
     const results = await Promise.allSettled([
-      scrapeBlinkit(brand, item, parseInt(limit)),
-      scrapeSwiggyInstamart(brand, item, parseInt(limit)),
-      scrapeZepto(brand, item, parseInt(limit)),
+      scrapeBlinkit(brand, item, numLimit),
+      scrapeSwiggyInstamart(brand, item, numLimit),
+      scrapeZepto(brand, item, numLimit),
     ]);
 
     const blinkit = results[0].status === "fulfilled" ? results[0].value : [];
