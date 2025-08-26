@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
@@ -10,15 +10,17 @@
   "author": "",
   "license": "ISC",
   "description": "",
-   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "nodemailer": "^6.9.3",
-    "dotenv": "^16.0.3",
-    "pg": "^8.11.0",
-    "jsonwebtoken": "^9.0.0",
-    "cookie-parser": "^1.4.6",
-    "redis": "^4.6.7"
-  },
+  "dependencies": {
+  "express": "^4.18.2",
+  "cors": "^2.8.5",
+  "nodemailer": "^6.9.3",
+  "dotenv": "^16.0.3",
+  "pg": "^8.11.0",
+  "jsonwebtoken": "^9.0.0",
+  "cookie-parser": "^1.4.6",
+  "redis": "^4.6.7",
+  "puppeteer": "^25.0.0"
+},
+
   "type": "module"
 }
