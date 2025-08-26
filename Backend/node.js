@@ -1,0 +1,283 @@
+import puppeteer from "puppeteer";
+
+async function launchBrowser() {
+  const browser = await puppeteer.launch({
+    headless: "new", // ✅ better than true (less detectable)
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-blink-features=AutomationControlled",
+    ],
+    defaultViewport: { width: 1280, height: 800 },
+  });
+
+  const page = await browser.newPage();
+
+  // ✅ Fake a real browser UA
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+    "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+  );
+
+  // ✅ Remove navigator.webdriver flag
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+  });
+
+  return { browser, page };
+}
+
+
+export async function scrapeBlinkit(brand, item, limit = 10) {
+  const { browser, page } = await launchBrowser();
+  const searchUrl = `https://blinkit.com/s/?q=${brand}%20${item}`;
+  console.log("Navigating to:", searchUrl);
+
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+  await page.waitForSelector("body");
+
+  // Close location popup if exists
+  try {
+    await page.waitForSelector("button[aria-label='Close']", { timeout: 5000 });
+    await page.click("button[aria-label='Close']");
+    console.log("Closed location popup ✅");
+  } catch {
+    console.log("No popup found, continuing...");
+  }
+
+  // ✅ Wait until at least `limit` product cards are present
+  await page.waitForFunction(
+    (limit) =>
+      document.querySelectorAll("div.tw-relative.tw-flex.tw-h-full").length >=
+      limit,
+    { timeout: 20000 },
+    limit
+  );
+
+  // ✅ Ensure each card is visible and its image `src` is loaded
+  for (let i = 0; i < limit; i++) {
+    await page.evaluate((i) => {
+      const card = document.querySelectorAll(
+        "div.tw-relative.tw-flex.tw-h-full"
+      )[i];
+      if (card) card.scrollIntoView();
+    }, i);
+
+    await page.waitForFunction(
+      (i) => {
+        const card = document.querySelectorAll(
+          "div.tw-relative.tw-flex.tw-h-full"
+        )[i];
+        if (!card) return false;
+        const img = card.querySelector("img");
+        return (
+          img &&
+          (img.getAttribute("src") ||
+            img.getAttribute("srcset") ||
+            img.getAttribute("data-src") ||
+            img.getAttribute("data-srcset"))
+        );
+      },
+      { timeout: 5000 },
+      i
+    );
+  }
+
+  // ✅ Scrape product cards
+  const products = await page.evaluate((limit) => {
+    const items = [];
+    const productCards = document.querySelectorAll(
+      "div.tw-relative.tw-flex.tw-h-full"
+    );
+
+    for (let i = 0; i < limit && i < productCards.length; i++) {
+      const card = productCards[i];
+      const id = card.getAttribute("id"); // product unique id
+
+      const name =
+        card.querySelector(".tw-text-300")?.innerText.trim() || "Unknown";
+      const price =
+        card.querySelector(".tw-text-200.tw-font-semibold")?.innerText.trim() ||
+        "N/A";
+
+      const imgEl = card.querySelector("img");
+      const image =
+        imgEl?.getAttribute("src") ||
+        imgEl?.getAttribute("srcset")?.split(" ")[0] ||
+        imgEl?.getAttribute("data-src") ||
+        imgEl?.getAttribute("data-srcset")?.split(" ")[0] ||
+        "";
+
+      // Build product link if id exists
+      let slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // remove unwanted chars
+        .replace(/\s+/g, "-") // spaces → hyphen
+        .trim();
+
+      const link = id
+        ? `https://blinkit.com/prn/${slug}/prid/${id}`
+        : "https://blinkit.com";
+
+      items.push({ id, name, price, image, link });
+    }
+    return items;
+  }, limit);
+
+  await browser.close();
+  return products;
+}
+
+
+export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
+  const { browser, page } = await launchBrowser();
+  const searchUrl = `https://www.swiggy.com/instamart/search?custom_back=true&query=${brand}%20${item}`;
+  console.log("Navigating to:", searchUrl);
+
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+  await page.waitForSelector("body");
+
+  // ✅ Wait until at least `limit` product cards are present
+  await page.waitForFunction(
+    (limit) =>
+      document.querySelectorAll("[data-testid='default_container_ux4']").length >=
+      limit,
+    { timeout: 20000 },
+    limit
+  );
+
+  // ✅ Ensure each card is visible and has image + price loaded
+  for (let i = 0; i < limit; i++) {
+    await page.evaluate((i) => {
+      const card = document.querySelectorAll(
+        "[data-testid='default_container_ux4']"
+      )[i];
+      if (card) card.scrollIntoView();
+    }, i);
+
+    await page.waitForFunction(
+      (i) => {
+        const card = document.querySelectorAll(
+          "[data-testid='default_container_ux4']"
+        )[i];
+        if (!card) return false;
+
+        // ✅ Price check
+        const priceEl = card.querySelector("[data-testid='item-offer-price']");
+        const priceValid =
+          priceEl &&
+          ((priceEl.innerText && priceEl.innerText.trim().length > 0) ||
+            (priceEl.getAttribute("aria-label") &&
+              priceEl.getAttribute("aria-label").trim().length > 0));
+
+        // ✅ Image check
+        const img = card.querySelector("img");
+        const imgValid =
+          img &&
+          (img.getAttribute("src") ||
+            (img.getAttribute("srcset") &&
+              img.getAttribute("srcset").trim().length > 0));
+
+        return priceValid && imgValid;
+      },
+      { timeout: 20000 }, // increased to 20s
+      i
+    );
+  }
+
+  // ✅ Scrape product cards
+  const products = await page.evaluate((limit) => {
+    const items = [];
+    const productCards = document.querySelectorAll(
+      "[data-testid='default_container_ux4']"
+    );
+
+    for (let i = 0; i < limit && i < productCards.length; i++) {
+      const card = productCards[i];
+
+      const name =
+        card.querySelector(".novMV")?.innerText.trim() ||
+        card.querySelector("._1sPB0")?.innerText.trim() ||
+        "Unknown";
+
+      const price =
+        card.querySelector("[data-testid='item-offer-price']")?.innerText.trim() ||
+        card.querySelector("[data-testid='item-offer-price']")?.getAttribute("aria-label")?.trim() ||
+        "N/A";
+
+      const imgEl = card.querySelector("img");
+      const image =
+        imgEl?.getAttribute("src") ||
+        imgEl?.getAttribute("srcset")?.split(" ")[0] ||
+        "";
+
+      // ✅ Added link (fallback if anchor not found → search page itself)
+      const link =
+        card.querySelector("a")?.href || window.location.href;
+
+      items.push({ name, price, image, link });
+    }
+    return items.slice(0, limit); // ✅ Hard cap
+  }, limit);
+
+  await browser.close();
+  return products;
+}
+
+
+export async function scrapeZepto(brand, item, limit = 10) {
+  const { browser, page } = await launchBrowser();
+  const searchUrl = `https://www.zeptonow.com/search?query=${brand}%20${item}`;
+  console.log("Navigating to:", searchUrl);
+
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+
+  // ✅ Wait until at least 1 product is visible
+  await page.waitForSelector("div[data-slot-id='ProductName']", { timeout: 30000 });
+
+  // ✅ Scroll until enough products are loaded
+  let loaded = 0;
+  while (loaded < limit) {
+    await page.evaluate(() => window.scrollBy(0, 1000));
+    await new Promise(r => setTimeout(r, 1500));
+
+    loaded = await page.evaluate(() =>
+      document.querySelectorAll("div[data-slot-id='ProductName']").length
+    );
+  }
+
+  // ✅ Extract product details (only name, price, image, link)
+  const products = await page.evaluate((limit) => {
+    const items = [];
+    const nameNodes = document.querySelectorAll("div[data-slot-id='ProductName']");
+
+    for (let i = 0; i < limit && i < nameNodes.length; i++) {
+      const wrapper = nameNodes[i].closest("div.c5SZXs") || nameNodes[i].closest("div");
+
+      const name = nameNodes[i].querySelector("span")?.innerText.trim() || "Unknown";
+
+      const price =
+        wrapper.querySelector("div[data-slot-id='Price'] p")?.innerText.trim() || "N/A";
+
+      const imgEl = wrapper.querySelector("div[data-slot-id='ProductImageWrapper'] img");
+      const image =
+        imgEl?.getAttribute("src") ||
+        imgEl?.getAttribute("srcset")?.split(" ")[0] ||
+        "";
+
+      const relativeLink = wrapper.closest("a")?.getAttribute("href") || "";
+      const link = relativeLink ? "https://www.zeptonow.com" + relativeLink : "";
+
+      items.push({ name, price, image, link });
+    }
+
+    return items;
+  }, limit);
+
+  await browser.close();
+
+  // ✅ Remove duplicates (based on link)
+  const uniqueProducts = Array.from(new Map(products.map(p => [p.link, p])).values());
+
+  return uniqueProducts;
+}

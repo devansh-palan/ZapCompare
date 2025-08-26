@@ -1,0 +1,29 @@
+# Node modules (for both frontend and backend)
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+**/.env
+
+# Build outputs
+frontend/build/
+frontend/dist/
+backend/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vercel / Render folders (if any)
+.vercel/
+.render/
+
+# Optional: IDE/editor folders
+.vscode/
+.idea/
