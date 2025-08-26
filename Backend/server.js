@@ -11,25 +11,30 @@ import { createClient } from "redis";
 dotenv.config();
 
 // PostgreSQL connection
-const db = new pg.Client({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  port: process.env.DB_PORT,
+const db = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
-db.connect();
 
-const redisClient = createClient({ url: process.env.REDIS_URL });
-redisClient.connect().catch(console.error);
+const redisClient = createClient({
+  url: process.env.REDIS_URL, 
+});
 
+redisClient.on("error", (err) => console.error("❌ Redis Client Error:", err));
+redisClient.on("connect", () => console.log("✅ Connected to Redis"));
+
+(async () => {
+  try {
+    await redisClient.connect();
+  } catch (err) {
+    console.error("❌ Redis connection failed:", err);
+  }
+})();
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:5173", // frontend URL
-    credentials: true, // allow cookies
-  })
-);
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
 
