@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL=import.meta.env.VITE_API_URL;
 export default function Dashboard() {
   const [brand, setBrand] = useState("");
   const [item, setItem] = useState("");
@@ -38,7 +39,7 @@ export default function Dashboard() {
     try {
       
       const res = await fetch(
-        `http://localhost:5000/search?brand=${brand || ""}&item=${item || ""}`,
+        `${API_URL}/search?brand=${brand || ""}&item=${item || ""}`,
         {
           credentials: "include",
         }
@@ -61,7 +62,7 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:5000/api/logout", {
+      await fetch(`${API_URL}/api/logout`, {
         method: "POST",
         credentials: "include",
       });

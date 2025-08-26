@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-
+const API_URL=import.meta.env.VITE_API_URL;
 function Register() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -43,7 +43,7 @@ function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/send-otp", {
+      const res = await fetch(`${API_URL}/api/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,7 +75,7 @@ function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/check-otp", {
+      const res = await fetch(`${API_URL}/api/check-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", 
