@@ -35,12 +35,12 @@ app.use(cookieParser());
 
 /* ---------------- JWT Middleware ---------------- */
 function authMiddleware(req, res, next) {
-  const token = req.cookies.token; // ✅ read from cookie
+  const token = req.cookies.token; 
   if (!token) return res.status(401).json({ error: "No token provided" });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ error: "Invalid/Expired token" });
-    req.user = decoded; // { email }
+    req.user = decoded; 
     next();
   });
 }
@@ -59,12 +59,11 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ success: false, message: "User not registered" });
     }
 
-    // issue JWT directly
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // 🔑 false on localhost
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 60 * 60 * 1000,
     });
@@ -82,7 +81,7 @@ app.get("/api/me", authMiddleware, (req, res) => {
   res.status(200).json({ email: req.user.email });
 });
 
-// Send OTP
+
 // Send OTP
 app.post("/api/send-otp", async (req, res) => {
   const { email } = req.body;
@@ -91,7 +90,6 @@ app.post("/api/send-otp", async (req, res) => {
   }
 
   try {
-    // ❌ Prevent duplicate registration
     const existingUser = await db.query("SELECT * FROM Users WHERE email = $1", [email]);
     if (existingUser.rows.length > 0 && existingUser.rows[0].registered) {
       return res.status(400).json({ message: "User already registered. Please login." });
@@ -142,10 +140,9 @@ app.post("/api/check-otp", async (req, res) => {
 
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // ✅ Set secure cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // HTTPS only
+      secure: true, 
       sameSite: "strict",
       maxAge: 60 * 60 * 1000,
     });
@@ -161,7 +158,7 @@ app.post("/api/check-otp", async (req, res) => {
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true, // keep true in production (HTTPS)
+    secure: true, 
     sameSite: "strict",
   });
   res.status(200).json({ message: "Logged out successfully" });

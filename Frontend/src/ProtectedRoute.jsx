@@ -9,7 +9,7 @@ function ProtectedRoute({ children }) {
     const checkAuth = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/me", {
-          credentials: "include", // 🔑 send JWT cookie
+          credentials: "include", 
         });
         if (res.ok) {
           setAuthenticated(true);

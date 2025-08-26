@@ -20,7 +20,7 @@ function Register() {
     return name.slice(0, 4) + "***@" + domain;
   };
 
-  // Timer countdown
+  
   useEffect(() => {
     let interval;
     if (timer > 0) {
@@ -29,12 +29,12 @@ function Register() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  // Autofocus OTP input
+  
   useEffect(() => {
     if (otpSent && otpInputRef.current) otpInputRef.current.focus();
   }, [otpSent]);
 
-  // Send OTP
+  
   const sendOtp = async () => {
     if (!isValidEmail(email)) {
       toast.error("❌ Please enter a valid Gmail address");
@@ -66,7 +66,7 @@ function Register() {
     setLoading(false);
   };
 
-  // Verify OTP
+  
   const verifyOtp = async () => {
     if (!otp) {
       toast.error("❌ Please enter OTP");
@@ -78,7 +78,7 @@ function Register() {
       const res = await fetch("http://localhost:5000/api/check-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // important for cookie
+        credentials: "include", 
         body: JSON.stringify({ email, otp }),
       });
 

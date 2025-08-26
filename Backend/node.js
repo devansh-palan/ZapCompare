@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 
 async function launchBrowser() {
   const browser = await puppeteer.launch({
-    headless: "new", // ✅ better than true (less detectable)
+    headless: "new", 
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -13,13 +13,12 @@ async function launchBrowser() {
 
   const page = await browser.newPage();
 
-  // ✅ Fake a real browser UA
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
     "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
   );
 
-  // ✅ Remove navigator.webdriver flag
+
   await page.evaluateOnNewDocument(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
@@ -36,16 +35,6 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
   await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
   await page.waitForSelector("body");
 
-  // Close location popup if exists
-  try {
-    await page.waitForSelector("button[aria-label='Close']", { timeout: 5000 });
-    await page.click("button[aria-label='Close']");
-    console.log("Closed location popup ✅");
-  } catch {
-    console.log("No popup found, continuing...");
-  }
-
-  // ✅ Wait until at least `limit` product cards are present
   await page.waitForFunction(
     (limit) =>
       document.querySelectorAll("div.tw-relative.tw-flex.tw-h-full").length >=
@@ -54,7 +43,6 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
     limit
   );
 
-  // ✅ Ensure each card is visible and its image `src` is loaded
   for (let i = 0; i < limit; i++) {
     await page.evaluate((i) => {
       const card = document.querySelectorAll(
@@ -83,7 +71,6 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
     );
   }
 
-  // ✅ Scrape product cards
   const products = await page.evaluate((limit) => {
     const items = [];
     const productCards = document.querySelectorAll(
@@ -92,7 +79,7 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
 
     for (let i = 0; i < limit && i < productCards.length; i++) {
       const card = productCards[i];
-      const id = card.getAttribute("id"); // product unique id
+      const id = card.getAttribute("id"); 
 
       const name =
         card.querySelector(".tw-text-300")?.innerText.trim() || "Unknown";
@@ -108,11 +95,10 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
         imgEl?.getAttribute("data-srcset")?.split(" ")[0] ||
         "";
 
-      // Build product link if id exists
       let slug = name
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "") // remove unwanted chars
-        .replace(/\s+/g, "-") // spaces → hyphen
+        .replace(/[^a-z0-9\s-]/g, "") 
+        .replace(/\s+/g, "-") 
         .trim();
 
       const link = id
@@ -137,7 +123,6 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
   await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
   await page.waitForSelector("body");
 
-  // ✅ Wait until at least `limit` product cards are present
   await page.waitForFunction(
     (limit) =>
       document.querySelectorAll("[data-testid='default_container_ux4']").length >=
@@ -146,7 +131,6 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
     limit
   );
 
-  // ✅ Ensure each card is visible and has image + price loaded
   for (let i = 0; i < limit; i++) {
     await page.evaluate((i) => {
       const card = document.querySelectorAll(
@@ -162,7 +146,7 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
         )[i];
         if (!card) return false;
 
-        // ✅ Price check
+       
         const priceEl = card.querySelector("[data-testid='item-offer-price']");
         const priceValid =
           priceEl &&
@@ -170,7 +154,7 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
             (priceEl.getAttribute("aria-label") &&
               priceEl.getAttribute("aria-label").trim().length > 0));
 
-        // ✅ Image check
+        
         const img = card.querySelector("img");
         const imgValid =
           img &&
@@ -180,12 +164,12 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
 
         return priceValid && imgValid;
       },
-      { timeout: 20000 }, // increased to 20s
+      { timeout: 20000 }, 
       i
     );
   }
 
-  // ✅ Scrape product cards
+  
   const products = await page.evaluate((limit) => {
     const items = [];
     const productCards = document.querySelectorAll(
@@ -211,13 +195,13 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
         imgEl?.getAttribute("srcset")?.split(" ")[0] ||
         "";
 
-      // ✅ Added link (fallback if anchor not found → search page itself)
+      
       const link =
         card.querySelector("a")?.href || window.location.href;
 
       items.push({ name, price, image, link });
     }
-    return items.slice(0, limit); // ✅ Hard cap
+    return items.slice(0, limit); 
   }, limit);
 
   await browser.close();
@@ -232,10 +216,10 @@ export async function scrapeZepto(brand, item, limit = 10) {
 
   await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
 
-  // ✅ Wait until at least 1 product is visible
+  
   await page.waitForSelector("div[data-slot-id='ProductName']", { timeout: 30000 });
 
-  // ✅ Scroll until enough products are loaded
+  
   let loaded = 0;
   while (loaded < limit) {
     await page.evaluate(() => window.scrollBy(0, 1000));
@@ -246,7 +230,7 @@ export async function scrapeZepto(brand, item, limit = 10) {
     );
   }
 
-  // ✅ Extract product details (only name, price, image, link)
+  
   const products = await page.evaluate((limit) => {
     const items = [];
     const nameNodes = document.querySelectorAll("div[data-slot-id='ProductName']");
@@ -276,7 +260,7 @@ export async function scrapeZepto(brand, item, limit = 10) {
 
   await browser.close();
 
-  // ✅ Remove duplicates (based on link)
+  
   const uniqueProducts = Array.from(new Map(products.map(p => [p.link, p])).values());
 
   return uniqueProducts;

@@ -9,13 +9,13 @@ export default function Dashboard() {
   const [error, setError] = useState("");
     const navigate = useNavigate();
 
-  // ✅ Parse price (remove ₹, commas, text → number)
+
   const parsePrice = (price) => {
     if (!price) return Infinity;
     return Number(price.toString().replace(/[^0-9.]/g, "")) || Infinity;
   };
 
-  // ✅ Get cheapest price across all platforms
+ 
   const getCheapestPrice = (data) => {
     const allPrices = [
       ...data.blinkit.map((p) => parsePrice(p.price)),
@@ -36,7 +36,7 @@ export default function Dashboard() {
     setResults({ blinkit: [], swiggy: [], zepto: [] });
 
     try {
-      // ✅ Pass token in Authorization header
+      
       const res = await fetch(
         `http://localhost:5000/search?brand=${brand || ""}&item=${item || ""}`,
         {

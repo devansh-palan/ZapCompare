@@ -1,13 +1,9 @@
-/* ------------------
-   Tailwind setup
------------------- */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ------------------
-   Global reset + base styles
------------------- */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -28,9 +24,7 @@ body {
   min-height: 100vh;
 }
 
-/* ------------------
-   Layout + Containers
------------------- */
+
 #root {
   background-color: rgb(241, 241, 227);
   min-height: 100vh;
@@ -62,9 +56,7 @@ body {
   background-color: #000;
 }
 
-/* ------------------
-   Login Page Styles
------------------- */
+
 .login {
   height: 75vh;
   width: 75vh;
@@ -126,9 +118,7 @@ body {
   background-color: royalblue;
 }
 
-/* ------------------
-   Media + Misc
------------------- */
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -167,9 +157,7 @@ img {
   width: 500px;
 }
 
-/* ------------------
-   Light Mode Overrides
------------------- */
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -183,9 +171,7 @@ img {
   }
 }
 
-/* ------------------
-   Optional Vite Demo Styles
------------------- */
+
 .logo {
   height: 6em;
   padding: 1.5em;

@@ -3,7 +3,7 @@ import Home from "./Home";
 import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
-import ProtectedRoute from "./ProtectedRoute"; // 👈 import wrapper
+import ProtectedRoute from "./ProtectedRoute"; 
 
 function App() {
   return (
