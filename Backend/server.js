@@ -147,8 +147,8 @@ app.post("/api/check-otp", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, 
-      sameSite: "none",
+      secure: "development" === "production",
+      sameSite: "development" === "production" ? "none" : "lax",
       maxAge: 60 * 60 * 1000,
     });
 
@@ -207,4 +207,7 @@ app.get("/search", authMiddleware, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Backend running on port ${PORT}`);
+});
+

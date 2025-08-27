@@ -35,7 +35,7 @@ export async function scrapeBlinkit(brand, item, limit = 10) {
   const searchUrl = `https://blinkit.com/s/?q=${brand}%20${item}`;
   console.log("Navigating to:", searchUrl);
 
-  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("body");
 
   await page.waitForFunction(
@@ -123,7 +123,7 @@ export async function scrapeSwiggyInstamart(brand, item, limit = 10) {
   const searchUrl = `https://www.swiggy.com/instamart/search?custom_back=true&query=${brand}%20${item}`;
   console.log("Navigating to:", searchUrl);
 
-  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("body");
 
   await page.waitForFunction(
@@ -217,7 +217,7 @@ export async function scrapeZepto(brand, item, limit = 10) {
   const searchUrl = `https://www.zeptonow.com/search?query=${brand}%20${item}`;
   console.log("Navigating to:", searchUrl);
 
-  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 
   
   await page.waitForSelector("div[data-slot-id='ProductName']", { timeout: 30000 });
