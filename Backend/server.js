@@ -11,10 +11,14 @@ import { createClient } from "redis";
 dotenv.config();
 
 // PostgreSQL connection
-const db = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+const db = new pg.Client({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: process.env.DB_PORT,
 });
+db.connect();
 
 const redisClient = createClient({
   url: process.env.REDIS_URL, 
