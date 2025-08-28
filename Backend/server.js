@@ -73,7 +73,7 @@ app.post("/api/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: "development" === "production" ? "none" : "lax",
       maxAge: 60 * 60 * 1000,
     });
 
@@ -167,7 +167,7 @@ app.post("/api/check-otp", async (req, res) => {
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true, 
+    secure: "development" === "production",
     sameSite: "strict",
   });
   res.status(200).json({ message: "Logged out successfully" });
