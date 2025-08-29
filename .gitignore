@@ -27,3 +27,5 @@ Thumbs.db
 # Optional: IDE/editor folders
 .vscode/
 .idea/
+
+dump.rdb
