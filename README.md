@@ -2,7 +2,7 @@
 
 A full-stack web application that helps users quickly **compare grocery prices** across multiple platforms — **Blinkit, Swiggy Instamart, and Zepto**. Built with secure authentication, intelligent product search, and optimized performance through Redis caching.
 
-![ZapCompare Demo](https://drive.google.com/file/d/1aMdU1OF-_TJkBPwfNLnJ5JkYlbUnRqWe/view?usp=sharing) 
+![ZapCompare Demo](https://drive.google.com/file/d/1aMdU1OF-_TJkBPwfNLnJ5JkYlbUnRqWe) 
 
 ## 🌟 Why ZapCompare?
 
