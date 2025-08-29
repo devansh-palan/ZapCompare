@@ -227,7 +227,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Devansh Palan**
 - GitHub: [@devansh-palan](https://github.com/devansh-palan)
-- LinkedIn: [Connect with me](https://linkedin.com/in/devansh-palan) <!-- Update with actual LinkedIn -->
+- LinkedIn: [Connect with me](www.linkedin.com/in/devansh-palan-994a21289) <!-- Update with actual LinkedIn -->
 
 ## 🙏 Acknowledgments
 
